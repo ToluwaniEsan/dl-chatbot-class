@@ -1,16 +1,41 @@
 @import "tailwindcss";
 
 :root {
-  --background: #0f1419;
-  --foreground: #e7e9ea;
-  --muted: #8b98a5;
-  --card: #16181c;
-  --accent: #1d9bf0;
-  --border: #2f3336;
+  --maroon: #6b1c23;
+  --maroon-deep: #4a1419;
+  --cream: #f4ead8;
+  --cream-muted: #e8dcc8;
+  --black: #0d0d0d;
+  --black-soft: #1a1414;
+  --ink: #1a0a0c;
+  --border: #3d2528;
+  --user-bubble: #7a2830;
+  --assistant-bubble: #faf6ef;
+  --accent-ring: #a84852;
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+  background: var(--black);
+  color: var(--cream);
+  font-family:
+    ui-sans-serif,
+    system-ui,
+    -apple-system,
+    "Segoe UI",
+    Roboto,
+    "Helvetica Neue",
+    Arial,
+    sans-serif;
+}
+
+/* Custom scrollbar (maroon / cream) */
+.chat-scroll::-webkit-scrollbar {
+  width: 8px;
+}
+.chat-scroll::-webkit-scrollbar-track {
+  background: var(--black-soft);
+}
+.chat-scroll::-webkit-scrollbar-thumb {
+  background: var(--maroon);
+  border-radius: 4px;
 }

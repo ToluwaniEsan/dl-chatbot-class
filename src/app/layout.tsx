@@ -3,7 +3,8 @@ import "./globals.css";
 
 export const metadata: Metadata = {
   title: "Class chatbot",
-  description: "Pretrained LLM chat UI (class project)",
+  description:
+    "Pretrained deep learning language model chat (inference only, class project)",
 };
 
 export default function RootLayout({

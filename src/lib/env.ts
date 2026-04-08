@@ -26,14 +26,20 @@ export function getLlmConfig() {
 }
 
 export function getEmbeddingConfig() {
-  const apiKey = process.env.OPENAI_API_KEY?.trim() || "ollama";
-  const baseURL =
-    process.env.OPENAI_BASE_URL?.trim() || "https://api.openai.com/v1";
+  const apiKey =
+    process.env.OPENAI_EMBEDDING_API_KEY?.trim() ||
+    process.env.OPENAI_API_KEY?.trim() ||
+    "ollama";
+  const baseURL = (
+    process.env.OPENAI_EMBEDDING_BASE_URL?.trim() ||
+    process.env.OPENAI_BASE_URL?.trim() ||
+    "https://api.openai.com/v1"
+  ).replace(/\/$/, "");
   const model =
     process.env.OPENAI_EMBEDDING_MODEL?.trim() || "text-embedding-3-small";
   return {
     apiKey,
-    baseURL: baseURL.replace(/\/$/, ""),
+    baseURL,
     model,
   };
 }
@@ -41,7 +47,7 @@ export function getEmbeddingConfig() {
 export function getSystemPrompt() {
   return (
     process.env.LLM_SYSTEM_PROMPT?.trim() ||
-    "You are a helpful assistant for a class project chatbot. Answer clearly and concisely."
+    "You are a helpful assistant for a class project that uses a pretrained language model (no custom training in this app). Answer from your knowledge. Be clear and accurate; use short paragraphs, lists, or steps when that makes the answer easier to read."
   );
 }
 
