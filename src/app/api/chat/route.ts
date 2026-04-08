@@ -70,7 +70,13 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "Expected JSON object." }, { status: 400 });
   }
 
+<<<<<<< HEAD
   const { messages } = body as { messages?: unknown };
+=======
+  const { messages } = body as {
+    messages?: unknown;
+  };
+>>>>>>> 506cc67 (Refactor chatbot flow, integrate Tavily search, and polish UI)
 
   if (!Array.isArray(messages) || messages.length === 0) {
     return NextResponse.json(
@@ -89,6 +95,7 @@ export async function POST(req: Request) {
     );
   }
 
+<<<<<<< HEAD
   let normalized: ChatMessage[];
   try {
     normalized = await normalizeChatMessages(messages as ChatMessage[]);
@@ -105,11 +112,16 @@ export async function POST(req: Request) {
       reply: result.reply,
       ...(result.sources?.length ? { sources: result.sources } : {}),
     });
+=======
+  try {
+    const result = await completeChat(messages as ChatMessage[]);
+    return NextResponse.json({ reply: result.reply });
+>>>>>>> 506cc67 (Refactor chatbot flow, integrate Tavily search, and polish UI)
   } catch (e) {
     const message = e instanceof Error ? e.message : "Unknown error";
     const status =
       message.includes("Missing environment variable") ||
-      message.includes("OPENAI_API_KEY")
+      message.includes("LLM_API_KEY")
         ? 503
         : 500;
     return NextResponse.json({ error: message }, { status });
