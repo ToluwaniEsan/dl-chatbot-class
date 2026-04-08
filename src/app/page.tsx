@@ -12,7 +12,6 @@ export default function Home() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const bottomRef = useRef<HTMLDivElement>(null);
-  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const scrollToBottom = useCallback(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -26,34 +25,18 @@ export default function Home() {
 
   const send = useCallback(async () => {
     const text = input.trim();
-    if ((!text && pending.length === 0) || loading) return;
+    if (!text || loading) return;
     setError(null);
-    const savedInput = input;
     setInput("");
     const prior = messages;
-    const pendingSnapshot = [...pending];
-    let userContent: string | MessageContentPart[];
-    try {
-      userContent = await buildUserContent(text, pendingSnapshot);
-    } catch {
-      setError("Could not read one of the files.");
-      setInput(savedInput);
-      return;
-    }
-    setPending([]);
-    const nextMessages: ChatMessage[] = [
-      ...prior,
-      { role: "user", content: userContent },
-    ];
+    const nextMessages: ChatMessage[] = [...prior, { role: "user", content: text }];
     setMessages(nextMessages);
     setLoading(true);
     try {
       const res = await fetch("/api/chat", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          messages: nextMessages,
-        }),
+        body: JSON.stringify({ messages: nextMessages }),
       });
       const data = (await res.json()) as {
         reply?: string;
@@ -75,8 +58,6 @@ export default function Home() {
       const msg = e instanceof Error ? e.message : "Something went wrong.";
       setError(msg);
       setMessages(prior);
-      setInput(savedInput);
-      setPending(pendingSnapshot);
     } finally {
       setLoading(false);
     }
@@ -85,10 +66,7 @@ export default function Home() {
   return (
     <main className="grain-bg min-h-screen px-4 py-5 sm:px-6 sm:py-8">
       <section className="mx-auto flex w-full max-w-4xl flex-col gap-4 sm:gap-5">
-        <ChatHeader
-          onClear={clearChat}
-          disableClear={loading || messages.length === 0}
-        />
+        <ChatHeader onClear={clearChat} disableClear={loading || messages.length === 0} />
 
         <div className="card-shell flex min-h-[56vh] flex-col overflow-hidden">
           <ChatMessageList
