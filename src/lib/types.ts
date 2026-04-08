@@ -14,8 +14,5 @@ export type MessageContentPart =
 
 export type ChatMessage = {
   role: ChatRole;
-  /** Plain string, or multimodal parts (user messages may include images / uploads). */
-  content: string | MessageContentPart[];
-  /** Present on assistant turns when RAG cited corpus files */
-  sources?: string[];
+  content: string;
 };

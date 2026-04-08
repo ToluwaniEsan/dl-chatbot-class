@@ -1,5 +1,16 @@
 import type { Metadata } from "next";
+import { Fraunces, Space_Grotesk } from "next/font/google";
 import "./globals.css";
+
+const fraunces = Fraunces({
+  subsets: ["latin"],
+  variable: "--font-display",
+});
+
+const spaceGrotesk = Space_Grotesk({
+  subsets: ["latin"],
+  variable: "--font-sans",
+});
 
 export const metadata: Metadata = {
   title: "Class chatbot",
@@ -14,7 +25,9 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className="min-h-screen antialiased">{children}</body>
+      <body className={`${fraunces.variable} ${spaceGrotesk.variable} min-h-screen antialiased`}>
+        {children}
+      </body>
     </html>
   );
 }

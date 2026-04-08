@@ -1,22 +1,22 @@
+<<<<<<< HEAD
 import OpenAI from "openai";
 import { userMessagePlainText } from "@/lib/contentText";
+=======
+import LlmClient from "openai";
+>>>>>>> 506cc67 (Refactor chatbot flow, integrate Tavily search, and polish UI)
 import type { ChatMessage } from "@/lib/types";
 import {
   assertProviderAuthIfNeeded,
-  getEmbeddingConfig,
   getLlmConfig,
   getSystemPrompt,
 } from "@/lib/env";
-import {
-  loadCorpusChunks,
-  topKBySimilarity,
-  type IndexedChunk,
-} from "@/lib/rag";
+import { searchWeb, buildSearchContextPrompt } from "@/lib/tavily";
 
 function makeClient(apiKey: string, baseURL: string) {
-  return new OpenAI({ apiKey, baseURL });
+  return new LlmClient({ apiKey, baseURL });
 }
 
+<<<<<<< HEAD
 function apiStatus(e: unknown): number | undefined {
   return (e as { status?: number }).status;
 }
@@ -114,39 +114,47 @@ async function embedBatch(
     explainApiFailure(e, "embeddings");
   }
 }
+=======
+function shouldUseWebSearch(query: string): boolean {
+  const normalized = query.toLowerCase().trim();
+  if (!normalized) return false;
+>>>>>>> 506cc67 (Refactor chatbot flow, integrate Tavily search, and polish UI)
 
-function buildRagSystemPrompt(
-  base: string,
-  retrieved: IndexedChunk[],
-): string {
-  const blocks = retrieved
-    .map(
-      (c, i) =>
-        `### Source ${i + 1} (${c.source})\n${c.text}`,
-    )
-    .join("\n\n");
-  return `${base}
+  const shortGreetings = [
+    "hi",
+    "hello",
+    "hey",
+    "good morning",
+    "good afternoon",
+    "good evening",
+    "thanks",
+    "thank you",
+  ];
+  if (shortGreetings.includes(normalized)) return false;
 
-Use ONLY the following retrieved excerpts when they are relevant. If the answer is not in the excerpts, say you do not have that information in the provided materials.
+  const wordCount = normalized.split(/\s+/).length;
+  const questionWords = /\b(what|when|where|why|who|which|how|latest|news|today|current|recent|price|weather|update|updates)\b/;
 
-## Retrieved context
-${blocks}`;
+  return query.includes("?") || questionWords.test(normalized) || wordCount >= 4;
 }
 
 export async function completeChat(
   messages: ChatMessage[],
-  options: { useRag: boolean },
-): Promise<{ reply: string; sources?: string[] }> {
+): Promise<{ reply: string }> {
   assertProviderAuthIfNeeded();
   const llm = getLlmConfig();
+<<<<<<< HEAD
   const embedding = getEmbeddingConfig();
   const chatClient = makeClient(llm.apiKey, llm.baseURL);
   const embedClient = makeClient(embedding.apiKey, embedding.baseURL);
+=======
+  const client = makeClient(llm.apiKey, llm.baseURL);
+>>>>>>> 506cc67 (Refactor chatbot flow, integrate Tavily search, and polish UI)
 
   const systemBase = getSystemPrompt();
   let systemContent = systemBase;
-  let sources: string[] | undefined;
 
+<<<<<<< HEAD
   const ragEnabledEnv = process.env.RAG_ENABLED?.trim().toLowerCase();
   const ragEnabled =
     ragEnabledEnv !== "false" && ragEnabledEnv !== "0" && ragEnabledEnv !== "off";
@@ -179,11 +187,22 @@ export async function completeChat(
         systemContent = buildRagSystemPrompt(systemBase, picked);
         sources = [...new Set(picked.map((p) => p.source))];
       }
+=======
+  const lastUser = [...messages].reverse().find((m) => m.role === "user");
+  const query = lastUser?.content?.trim() || "";
+  const useSearch = Boolean(process.env.TAVILY_API_KEY?.trim());
+
+  // Try web search first only for likely factual/current queries.
+  if (useSearch && query && shouldUseWebSearch(query)) {
+    const searchResult = await searchWeb(query);
+    if (searchResult && searchResult.searchResults.length > 0) {
+      systemContent = buildSearchContextPrompt(systemBase, searchResult);
+>>>>>>> 506cc67 (Refactor chatbot flow, integrate Tavily search, and polish UI)
     }
   }
 
   const history = messages.filter((m) => m.role !== "system");
-  const apiMessages: OpenAI.Chat.ChatCompletionMessageParam[] = [
+  const apiMessages: LlmClient.Chat.ChatCompletionMessageParam[] = [
     { role: "system", content: systemContent },
     ...history.map((m): OpenAI.Chat.ChatCompletionMessageParam => {
       if (m.role === "assistant") {
@@ -279,5 +298,5 @@ export async function completeChat(
       `Empty response from the language model (finish_reason: ${finish}).${hint}`,
     );
   }
-  return { reply, sources };
+  return { reply };
 }
