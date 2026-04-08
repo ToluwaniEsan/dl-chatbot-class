@@ -1,70 +1,62 @@
-# Class chatbot (pretrained LLM)
+# Class Chatbot (Python FastAPI)
 
-A **Next.js** web app that chats with a **pretrained language model** through any **OpenAI-compatible HTTP API** (no custom model training in this repo). The UI is a **React** client; the browser talks to a **Route Handler** at `POST /api/chat`, which forwards prompts to your chosen provider (cloud API or local **Ollama**).
+This repository now uses a **Python FastAPI** chatbot implementation.
 
-Built for coursework where the goal is to use **deep learning inference** on existing checkpoints—hosted or local—not to train models from scratch.
+The active app is in:
 
-## Features
+- `python-fastapi-chatbot/`
 
-- **Chat UI** with a maroon / cream / black layout; message history and streaming-free completion responses.
-- **Multimodal input**: attach **images** (vision-capable models) and **documents** (PDF extracted server-side, plus plain text / Markdown / CSV). PDF text uses [pdf-parse](https://www.npmjs.com/package/pdf-parse).
-- **Optional RAG**: retrieve chunks from `data/corpus` (`.md` / `.txt`), embed the query and documents, inject top matches into the system prompt. Toggle with `RAG_ENABLED` in `.env.local`.
-- **Provider-agnostic**: set `OPENAI_BASE_URL`, `OPENAI_API_KEY`, and `OPENAI_MODEL` for OpenAI, DeepSeek, Groq, Ollama’s OpenAI-compat endpoint, etc.
+## Quick Start
 
-## Stack
+1. Move into the Python app directory:
 
-- **Next.js 15** (App Router), **React 19**, **TypeScript**, **Tailwind CSS v4**
-- **openai** SDK (OpenAI-compatible servers)
-- **pdf-parse** (server-side PDF text for uploads)
+```bash
+cd python-fastapi-chatbot
+```
 
-## Quick start
+2. Create and activate a virtual environment:
 
-1. Install [Node.js](https://nodejs.org/) (LTS).
-2. Clone the repo and install dependencies:
+```bash
+python3 -m venv .venv
+source .venv/bin/activate
+```
 
-   ```bash
-   npm install
-   ```
+3. Install dependencies:
 
-3. Copy `.env.example` to `.env.local` and fill in your provider (see comments in `.env.example`).
-4. Run the dev server:
+```bash
+pip install -r requirements.txt
+```
 
-   ```bash
-   npm run dev
-   ```
+4. Create your env file and fill in keys:
 
-5. Open [http://localhost:3000](http://localhost:3000).
+```bash
+cp .env.example .env
+```
 
-### Local Ollama
+Required:
 
-If you use `OPENAI_BASE_URL=http://localhost:11434/v1` and `OPENAI_API_KEY=ollama`, run **Ollama** on the same machine and `ollama pull` the chat model (and an embedding model if `RAG_ENABLED=true`). For **images**, use a **vision** model supported by your stack.
+- `LLM_API_KEY`
+- `LLM_BASE_URL`
+- `LLM_MODEL`
 
-### Cloud-only (no Ollama on that PC)
+Optional:
 
-Point `OPENAI_BASE_URL` and `OPENAI_API_KEY` at a hosted API and choose a chat model id that provider supports. You only need Node and this repo on the machine running `npm run dev`.
+- `TAVILY_API_KEY` (for live web search)
 
-## Project layout (short)
+5. Run the app:
 
-| Path | Role |
-|------|------|
-| `src/app/page.tsx` | Chat UI (React client) |
-| `src/app/api/chat/route.ts` | Validates requests, normalizes uploads, calls the LLM |
-| `src/lib/llm.ts` | Embeddings (RAG), chat completion, multimodal message mapping |
-| `src/lib/rag.ts` | Corpus chunking and cosine similarity |
-| `data/corpus/` | Optional RAG source files |
-| `PROJECT_REPORT.md` | Class report / presentation template |
+```bash
+uvicorn app.main:app --reload
+```
 
-## Scripts
+6. Open:
 
-- `npm run dev` — development server (Turbopack)
-- `npm run build` — production build
-- `npm run start` — run production build
-- `npm run lint` — ESLint
+```text
+http://127.0.0.1:8000
+```
 
-## Security note
+## Notes
 
-Never commit **`.env.local`** or real API keys. Copy variables from **`.env.example`** into your local env file only.
-
-## License
-
-Private / class use unless you add an explicit license.
+- API keys stay server-side in `.env`.
+- Replies are concise by default.
+- Source lists/URLs are not shown unless you explicitly request them.

@@ -1,0 +1,109 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>{{ app_title }}</title>
+    <link rel="stylesheet" href="/static/styles.css" />
+  </head>
+  <body>
+    <main class="shell">
+      <header class="hero">
+        <div>
+          <p class="eyebrow">Python FastAPI Chatbot</p>
+          <h1>Ask Better, Learn Faster</h1>
+          <p class="lede">
+            Groq-powered chat with optional Tavily web search. Short answers, clean UI, no source clutter.
+          </p>
+        </div>
+        <button id="clearBtn" class="ghost-btn" type="button">Clear chat</button>
+      </header>
+
+      <section class="chat-card">
+        <div id="messages" class="messages"></div>
+
+        <form id="chatForm" class="composer">
+          <input
+            id="messageInput"
+            type="text"
+            placeholder="Ask anything about your course..."
+            autocomplete="off"
+          />
+          <button id="sendBtn" type="submit">Send</button>
+        </form>
+      </section>
+    </main>
+
+    <script>
+      const messagesEl = document.getElementById("messages");
+      const form = document.getElementById("chatForm");
+      const input = document.getElementById("messageInput");
+      const clearBtn = document.getElementById("clearBtn");
+      const sendBtn = document.getElementById("sendBtn");
+      const state = [];
+
+      function render() {
+        messagesEl.innerHTML = "";
+        if (state.length === 0) {
+          const empty = document.createElement("div");
+          empty.className = "empty-state";
+          empty.textContent = "Try: Explain transformers in simple terms";
+          messagesEl.appendChild(empty);
+          return;
+        }
+
+        state.forEach((message) => {
+          const bubble = document.createElement("div");
+          bubble.className = `bubble ${message.role}`;
+          bubble.textContent = message.content;
+          messagesEl.appendChild(bubble);
+        });
+
+        messagesEl.scrollTop = messagesEl.scrollHeight;
+      }
+
+      function setLoading(loading) {
+        sendBtn.disabled = loading;
+        input.disabled = loading;
+        sendBtn.textContent = loading ? "Sending..." : "Send";
+      }
+
+      clearBtn.addEventListener("click", () => {
+        state.length = 0;
+        render();
+      });
+
+      form.addEventListener("submit", async (event) => {
+        event.preventDefault();
+        const text = input.value.trim();
+        if (!text) return;
+
+        state.push({ role: "user", content: text });
+        input.value = "";
+        render();
+        setLoading(true);
+
+        try {
+          const response = await fetch("/api/chat", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ messages: state }),
+          });
+          const data = await response.json();
+          if (!response.ok) throw new Error(data.error || "Request failed");
+          state.push({ role: "assistant", content: data.reply });
+          render();
+        } catch (error) {
+          state.push({ role: "assistant", content: error.message || "Something went wrong." });
+          render();
+        } finally {
+          setLoading(false);
+          input.focus();
+        }
+      });
+
+      render();
+      input.focus();
+    </script>
+  </body>
+</html>
